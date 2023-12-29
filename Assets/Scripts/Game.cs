@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
-    [SerializeField] private Bird _bird;
-    [SerializeField] private PipeGenerator _pipeGenerator;
+    [SerializeField] private Player _player;
+    [SerializeField] private ObjectPool _objectPool;
     [SerializeField] private StartScreen _startScreen;
     [SerializeField] private GameOverScreen _gameOverScreen;
 
@@ -13,14 +13,14 @@ public class Game : MonoBehaviour
     {
         _startScreen.PlayButtonClick += OnPlayButonClick;
         _gameOverScreen.RestartButtonClick += OnRestartButonClick;
-        _bird.GameOver += OnGameOver;
+        _player.Died += OnGameOver;
     }
 
     private void OnDisable()
     {
         _startScreen.PlayButtonClick -= OnPlayButonClick;
         _gameOverScreen.RestartButtonClick -= OnRestartButonClick;
-        _bird.GameOver -= OnGameOver;
+        _player.Died -= OnGameOver;
     }
 
     private void Start()
@@ -38,14 +38,14 @@ public class Game : MonoBehaviour
     private void OnRestartButonClick()
     {
         _gameOverScreen.Close();
-        _pipeGenerator.ResetPool();
         StartGame();
     }
 
     private void StartGame()
     {
         Time.timeScale = 1;
-        _bird.ResetPlayer();
+        _player.Reset();
+        _objectPool.Reset();
     }
 
     public void OnGameOver()

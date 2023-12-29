@@ -1,57 +1,46 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 
 public class ObjectPool : MonoBehaviour
 {
-    [SerializeField] private GameObject _container;
-    [SerializeField] private int _capacity;
+    [SerializeField] private Transform _container;
+    [SerializeField] private Enemy _enemy;
 
-    private Camera _camera;
-    private List<GameObject> _pool = new List<GameObject>();
+    private Queue<Enemy> _pool;
 
-    protected void Initialize(GameObject prefab)
+    public IEnumerable<Enemy> PooledObjects => _pool;
+
+    private void Awake()
     {
-        _camera = Camera.main;
+        _pool = new Queue<Enemy>();
+    }
 
-        for (int i = 0; i < _capacity; i++)
+    public Enemy GetObject()
+    {
+        if (_pool.Count == 0)
         {
-            GameObject spawned = Instantiate(prefab, _container.transform);
-            spawned.SetActive(false);
+            var enemy = Instantiate(_enemy);
+            enemy.transform.parent = _container;
 
-            _pool.Add(spawned);
+            return enemy;
         }
+
+        return _pool.Dequeue();
     }
 
-    protected bool TryGetObject(out GameObject result)
+    public void PutObject(Enemy enemy)
     {
-        result = _pool.FirstOrDefault(p => p.activeSelf == false);
-
-        return result != null;
+        _pool.Enqueue(enemy);
+        enemy.gameObject.SetActive(false);
     }
 
-    protected void DisableObjectAbroadScene()
+    public void Reset()
     {
-        Vector3 disablePoint = _camera.ViewportToWorldPoint(new Vector2(-1, 0.5f));
+        _pool.Clear();
 
-        foreach (GameObject item in _pool)
+        for (int i = 0; i < _container.childCount; i++)
         {
-            if (item.activeSelf == true)
-            {
-                if(item.transform.position.x < disablePoint.x)
-                {
-                    item.SetActive(false);
-                }
-            }
-        }
-    }
-
-    public void ResetPool()
-    {
-        foreach (GameObject item in _pool)
-        {
-            item.SetActive(false);
+            Destroy(_container.GetChild(i).gameObject);
         }
     }
 }
